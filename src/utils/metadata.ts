@@ -23,6 +23,6 @@ export function fetchMetadata(query_url: string) {
       let ao3_url = "https://archiveofourown.org/works/"+ao3_works_id;
       
       let fic = new ArchiveOfOurOwn(ao3_url);
-      fic.getWorksMetadata()
+      return fic.getWorksMetadata();
     }
 }

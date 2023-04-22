@@ -33,7 +33,9 @@ app.get("/", (req: Request, res: Response) => {
 
 app.post("/api/live/search", (req: Request, res: Response) => {
   if (req.query["q"] != undefined) 
-  return fetchMetadata(req.query["q"].toString());
+  fetchMetadata(req.query["q"].toString())!.then(data => {
+    res.send(data);
+  });
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}..`));
