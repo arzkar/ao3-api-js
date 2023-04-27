@@ -46,7 +46,11 @@ export class ArchiveOfOurOwn {
 
     getWorksMetadata() {
         console.log("Processing: ",this.worksUrl)
-        return axios.get(this.worksUrl)
+        return axios.get(this.worksUrl, {
+            params: {
+              "view_adult": 'true',
+              'view_full_work': 'true'
+        }})
         .then((html) =>{
             this.worksName = $('h2[class$="title heading"]',html.data).text().trim();
             
@@ -105,7 +109,6 @@ export class ArchiveOfOurOwn {
             
             this.worksHits = $('dl[class$="stats"]',html.data).find('dd[class$="hits"]').text().trim();
             
-            // console.log(JSON.stringify(this, null, 4));
             return JSON.stringify(this, null, 4);
         })
         .catch(function(err: string){
