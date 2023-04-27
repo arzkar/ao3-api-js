@@ -111,8 +111,9 @@ export class ArchiveOfOurOwn {
             
             return JSON.stringify(this, null, 4);
         })
-        .catch(function(err: string){
+        .catch((err: Error) => {
             console.log(err);
+            return err
         });
     }  
 }

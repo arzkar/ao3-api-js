@@ -14,7 +14,7 @@
 
 import express, { Express, Request, Response } from 'express';
 import { fetchMetadata } from "./src/utils/metadata"
-
+import * as crud from "./src/utils/crud";
 const app: Express = express();
 const port = process.env.PORT || 8080;
 
@@ -32,10 +32,21 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.post("/api/live/search", (req: Request, res: Response) => {
-  if (req.query["q"] != undefined) 
-  fetchMetadata(req.query["q"].toString())!.then(data => {
-    res.send(data);
-  });
+  if (req.query["q"])  {
+    let response = fetchMetadata(req.query["q"].toString())
+    if (response) {
+      response.then(data => {
+        if (data) {
+          crud.insertData(JSON.parse(data))
+          res.send(data);
+        }
+      })
+      .catch((err) => res.send({
+        err: err
+      }));;
+    }
+  }
 });
+
 
 app.listen(port, () => console.log(`Listening on port ${port}..`));

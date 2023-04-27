@@ -25,4 +25,5 @@ export function fetchMetadata(query_url: string) {
       let fic = new ArchiveOfOurOwn(ao3_url);
       return fic.getWorksMetadata();
     }
+    else return null
 }
