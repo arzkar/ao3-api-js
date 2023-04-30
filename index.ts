@@ -18,8 +18,8 @@ import * as crud from "./src/utils/crud";
 const app: Express = express();
 const port = process.env.PORT || 8080;
 
-app.use(express.json());
 crud.initMongoDB()
+app.use(express.json());
 
 app.get("/", (req: Request, res: Response) => {
   res.send({
@@ -34,13 +34,32 @@ app.get("/", (req: Request, res: Response) => {
 
 app.post("/api/live/search", (req: Request, res: Response) => {
   if (req.query["q"])  {
-    let response = fetchMetadata(req.query["q"].toString())
+    const response = fetchMetadata(req.query["q"].toString())
     if (response) {
       response.then(data => {
         if (data) {
           crud.insertData(JSON.parse(data))
           res.send(data);
         }
+      })
+      .catch((err) => res.send({
+        err: err
+      }));;
+    }
+  }
+});
+
+app.post("/api/archive/search", (req: Request, res: Response) => {
+  if (req.query["q"])  {
+    const response = crud.fetchData(req.query["q"].toString())
+    if (response) {
+      response.then(data => {
+        if (data) {
+          res.send(data);
+        }
+        else res.send({
+          err: "Data not found!"
+        })
       })
       .catch((err) => res.send({
         err: err

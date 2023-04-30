@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import MongoDBClient from "./db";
+import { URL_VALIDATE } from "./metadata";
 
 export function initMongoDB(){
     const db = MongoDBClient.db("ao3_db");
@@ -56,5 +57,7 @@ export function updateData(data: any) {
 
 export function fetchData(worksUrl: string) {
     const metadata = MongoDBClient.db("ao3_db").collection("metadata");
-    return metadata.findOne({'worksUrl': worksUrl})
+    if (URL_VALIDATE.test(worksUrl)) {
+        return metadata.findOne({'worksUrl': worksUrl})
+    }
 }
