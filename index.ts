@@ -19,6 +19,7 @@ const app: Express = express();
 const port = process.env.PORT || 8080;
 
 app.use(express.json());
+crud.initMongoDB()
 
 app.get("/", (req: Request, res: Response) => {
   res.send({

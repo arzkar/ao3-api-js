@@ -22,7 +22,7 @@ npm start
 
 ## Database
 
-Create a Database "ao3_db" with collection name "metadata"
+Create a database "ao3_db" and the collections will be automatically created by the server
 
 # Endpoints & Parameters
 

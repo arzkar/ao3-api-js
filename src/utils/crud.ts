@@ -13,6 +13,25 @@
 // limitations under the License.
 import MongoDBClient from "./db";
 
+export function initMongoDB(){
+    const db = MongoDBClient.db("ao3_db");
+    const db_col = ["metadata", "users"]
+    db_col.forEach((col)=> {
+        db.listCollections({name: col}).hasNext().then((col_exists)=> {
+            if (!col_exists) {
+                db.createCollection(col)
+                if (col == "users") {
+                    db.collection("users").insertOne({
+                        "user": "admin",
+                        "password": "admin"
+                    })
+                }
+            }
+            else console.log("Collection \"" + col + "\" already exists!")
+        })
+    });
+}
+
 export function insertData(data: any) {
     const metadata = MongoDBClient.db("ao3_db").collection("metadata");
     metadata.findOne({'worksId': data.worksId}).then((res: any)=> {
