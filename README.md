@@ -28,3 +28,14 @@ Create a database "ao3_db" and the collections will be automatically created by 
 
 - /api/live/search: To scrape an AO3 works by workUrl
 - /api/archive/search: To search the database for an AO3 works by workUrl
+- /api/archive/update:
+  - To update a metadata in the database by workUrl
+  - Requires a token to authenticate
+  - Send the "token" in the body, query or the headers
+- /api/archive/delete:
+  - To delete a metadata in the database by workUrl
+  - Requires a token to authenticate
+  - Send the "token" in the body, query or the headers
+- /api/auth:
+  - To get the JWT token to authenticate /update & /delete endpoints
+  - Send the "user" & "password" in the body and the token is returned

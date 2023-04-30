@@ -13,8 +13,13 @@
 // limitations under the License.
 
 import express, { Express, Request, Response } from 'express';
+import { sign } from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { fetchMetadata } from "./src/utils/metadata"
 import * as crud from "./src/utils/crud";
+import auth from "./src/middleware/auth";
 const app: Express = express();
 const port = process.env.PORT || 8080;
 
@@ -65,6 +70,74 @@ app.post("/api/archive/search", (req: Request, res: Response) => {
         err: err
       }));;
     }
+  }
+});
+
+// admin operations
+app.post("/api/archive/update", auth, (req: Request, res: Response) => {
+  if (req.query["q"])  {
+    const response = fetchMetadata(req.query["q"].toString())
+    if (response) {
+      response.then(data => {
+        if (data) {
+          crud.updateData(JSON.parse(data))
+          res.send(data);
+        }
+        else res.send({
+          err: "Data not found!"
+        })
+      })
+      .catch((err) => res.send({
+        err: err
+      }));;
+    }
+  }
+});
+
+app.post("/api/archive/delete", auth, (req: Request, res: Response) => {
+  if (req.query["q"])  {
+    const response = crud.deleteData(req.query["q"].toString())
+    if (response) {
+      response.then(data => {
+        if (data) {
+          res.send({
+            res: "Data deleted successfully!"
+          })
+        }
+        else res.send({
+          err: "Data not deleted successfully!"
+        })
+      })
+      .catch((err) => res.send({
+        err: err
+      }));;
+    }
+  }
+});
+
+
+app.post("/api/auth", (req: Request, res: Response) => {
+  const response = crud.fetchUser(req.body.user.toString())
+  if (response) {
+    response.then(data => {
+      if (data) {
+        if (req.body.password == data.password) {
+          var token = sign({ user: req.body.user}, process.env.TOKEN_KEY, {
+            expiresIn: 1800 // expires in 30 mins
+          });
+          res.send({
+            "token": token,
+            "expiresIn": "1800"
+          })
+        }
+      }
+      else res.send({
+        err: "User not found!"
+      })
+    })
+    .catch((err) => res.send({
+      err: err
+    }));;
   }
 });
 
