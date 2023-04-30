@@ -24,6 +24,11 @@ npm start
 
 Create a database "ao3_db" and the collections will be automatically created by the server
 
+## Environment variables
+
+Add the "TOKEN_KEY" for the API in a `.env` file in the project's root directory.<br>
+An example file is present called `.env.ex`
+
 # Endpoints & Parameters
 
 - /api/live/search: To scrape an AO3 works by workUrl
