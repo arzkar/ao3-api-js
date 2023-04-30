@@ -44,9 +44,9 @@ export function insertData(data: any) {
     })
 }
 
-export function deleteData(data: any) {
+export function deleteData(worksUrl: string) {
     const metadata = MongoDBClient.db("ao3_db").collection("metadata");
-    metadata.deleteOne({"worksId": data.worksId});
+    return metadata.deleteOne({"worksUrl": worksUrl});
 }
 
 export function updateData(data: any) {
@@ -60,4 +60,9 @@ export function fetchData(worksUrl: string) {
     if (URL_VALIDATE.test(worksUrl)) {
         return metadata.findOne({'worksUrl': worksUrl})
     }
+}
+
+export function fetchUser(user: string) {
+    const users = MongoDBClient.db("ao3_db").collection("users");
+    return users.findOne({'user': user})
 }
