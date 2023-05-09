@@ -122,7 +122,7 @@ app.post("/api/auth", (req: Request, res: Response) => {
     response.then(data => {
       if (data) {
         if (req.body.password == data.password) {
-          var token = sign({ user: req.body.user}, process.env.TOKEN_KEY, {
+          var token = sign({ user: req.body.user}, process.env.TOKEN_KEY!, {
             expiresIn: 1800 // expires in 30 mins
           });
           res.send({
