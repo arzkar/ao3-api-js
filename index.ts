@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import express, { Express, Request, Response } from 'express';
+import express, { Request, Express, Response } from 'express';
 import { sign } from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -20,6 +20,7 @@ dotenv.config();
 import { fetchMetadata } from "./src/utils/metadata"
 import * as crud from "./src/utils/crud";
 import auth from "./src/middleware/auth";
+
 const app: Express = express();
 const port = process.env.PORT || 8080;
 
@@ -39,18 +40,17 @@ app.get("/", (req: Request, res: Response) => {
 
 app.post("/api/live/search", (req: Request, res: Response) => {
   if (req.query["q"])  {
-    const response = fetchMetadata(req.query["q"].toString())
-    if (response) {
-      response.then(data => {
-        if (data) {
-          crud.insertData(JSON.parse(data))
-          res.send(data);
-        }
+    fetchMetadata(req.query["q"].toString())!.then((data: any) => {
+      if (data) {
+        res.send(JSON.stringify(data));
+      }
+      else res.send({
+        err: "Data not found!"
       })
-      .catch((err) => res.send({
-        err: err
-      }));;
-    }
+    })
+    .catch((err: any) => res.send({
+      err: err
+    }));;
   }
 });
 
@@ -66,7 +66,7 @@ app.post("/api/archive/search", (req: Request, res: Response) => {
           err: "Data not found!"
         })
       })
-      .catch((err) => res.send({
+      .catch((err: any) => res.send({
         err: err
       }));;
     }
@@ -76,21 +76,17 @@ app.post("/api/archive/search", (req: Request, res: Response) => {
 // admin operations
 app.post("/api/archive/update", auth, (req: Request, res: Response) => {
   if (req.query["q"])  {
-    const response = fetchMetadata(req.query["q"].toString())
-    if (response) {
-      response.then(data => {
-        if (data) {
-          crud.updateData(JSON.parse(data))
-          res.send(data);
-        }
-        else res.send({
-          err: "Data not found!"
-        })
+    fetchMetadata(req.query["q"].toString())!.then((data: any) => {
+      if (data) {
+        res.send(JSON.stringify(data));
+      }
+      else res.send({
+        err: "Data not found!"
       })
-      .catch((err) => res.send({
-        err: err
-      }));;
-    }
+    })
+    .catch((err: any) => res.send({
+      err: err
+    }));;
   }
 });
 

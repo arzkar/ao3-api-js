@@ -14,6 +14,7 @@
 import { verify } from "jsonwebtoken";
 import { Request, Response, NextFunction  } from 'express';
 import dotenv from "dotenv";
+
 dotenv.config();
 const config = process.env;
 
@@ -27,8 +28,7 @@ export default function verifyToken(req: Request, res: Response, next: NextFunct
     });
   }
   try {
-    const decoded = verify(token, config.TOKEN_KEY!);
-    req.user = decoded;
+    verify(token, config.TOKEN_KEY!);
   } catch (err) {
     return res.status(401).send({
       err: "Invalid Token",
