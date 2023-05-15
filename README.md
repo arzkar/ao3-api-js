@@ -9,27 +9,47 @@ An API to scrape archiveofourown.org fanfiction metadata using NodeJS’s Expres
 
 # Setup
 
-## API
+## Docker
+
+### Docker image
+
+#### Build manually
+
+```sh
+# Inside the git repository
+docker build -t arzkar/ao3-api-js .
+```
+
+#### Docker Hub
+
+```sh
+docker pull arzkar/ao3-api-js
+```
+
+### Run the docker
+
+```sh
+docker-compose up
+```
+
+## Manual
+
+### Environment variables
+
+Add the "TOKEN_KEY", "DEFAULT_ADMIN_USER", "DEFAULT_ADMIN_PWD" & "DOCKER" for the API in a `.env` file in the project's root directory.<br>
+An example file is present called `.env.ex`
+
+### API
 
 - Clone the repository & run `npm install`
 - Run the development API server using `npm run dev`
 - Run the production API server by:
 
 ```
-npm build
-npm start
+npm run deploy
 ```
 
-## Database
-
-Create a database "ao3_db" and the collections will be automatically created by the server
-
-## Environment variables
-
-Add the "TOKEN_KEY" for the API in a `.env` file in the project's root directory.<br>
-An example file is present called `.env.ex`
-
-# Endpoints & Parameters
+### Endpoints & Parameters
 
 - /api/live/search: To scrape an AO3 works by workUrl
 - /api/archive/search: To search the database for an AO3 works by workUrl

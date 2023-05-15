@@ -1,0 +1,18 @@
+version: "3"
+services:
+  ao3-api-js:
+    container_name: ao3-api-js
+    image: arzkar/ao3-api-js
+    restart: always
+    build: .
+    ports:
+      - "8080:8080"
+    links:
+      - mongo
+  mongo:
+    container_name: ao3-api-js-mongo
+    image: mongo
+    volumes:
+      - ./data:/data/db
+    ports:
+      - "27017:27017"
