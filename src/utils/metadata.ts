@@ -13,21 +13,36 @@
 // limitations under the License.
 
 import { ArchiveOfOurOwn } from "fetch-ao3";
-export var URL_VALIDATE= new RegExp("(?:(?:https?|ftp)://)(?:\\S+(?::\\S*)?@)?(?:(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,})))(?::\\d{2,5})?(?:/[^\\s]*)?", 'gm')
 
-export function fetchMetadata(query_url: string) {
-    if (URL_VALIDATE.test(query_url)) 
-    {
-      // extract work id from the url
-      let ao3_works_id = query_url.match(new RegExp("\\d+", 'gm'))?.[0];
-      let ao3_url = "https://archiveofourown.org/works/"+ao3_works_id;
-      
-      let fic = new ArchiveOfOurOwn();
-      const params: Object = {
-        "view_adult": 'true',
-        'view_full_work': 'true'
+export function URL_VALIDATE(url: string) {
+  try {
+    new URL(url);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+export async function fetchMetadata(query_url: string) {
+  if (URL_VALIDATE(query_url)) {
+    // extract work id from the url
+    let ao3_works_id = query_url.match(new RegExp("\\d+", "gm"))?.[0];
+    let ao3_url = "https://archiveofourown.org/works/" + ao3_works_id;
+
+    let fic = new ArchiveOfOurOwn();
+    const params: Object = {
+      view_adult: "true",
+      view_full_work: "true",
+    };
+
+    try {
+      return await fic.fetchWorksMetadata(ao3_url, params);
+    } catch (err) {
+      console.error("Error in fetchWorksMetadata:", err);
+      return null;
     }
-      return fic.fetchWorksMetadata(ao3_url, params);
-    }
-    else return null
+  } else {
+    console.log("Invalid query URL");
+    return null;
+  }
 }

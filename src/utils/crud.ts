@@ -11,58 +11,112 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import MongoDBClient from "./db";
+import { MongoClient, Db } from 'mongodb';
 import { URL_VALIDATE } from "./metadata";
 
-export function initMongoDB(){
-    const db = MongoDBClient.db("ao3_db");
-    const db_col = ["metadata", "users"]
-    db_col.forEach((col)=> {
-        db.listCollections({name: col}).hasNext().then((col_exists)=> {
-            if (!col_exists) {
-                db.createCollection(col)
-                if (col == "users") {
-                    db.collection("users").insertOne({
-                        "user": "admin",
-                        "password": "admin"
-                    })
-                }
-            }
-            else console.log("Collection \"" + col + "\" already exists!")
-        })
-    });
-}
+const isDocker = process.env.DOCKER === 'true';
+const mongoUrl = isDocker ? 'mongodb://mongo:27017' : 'mongodb://127.0.0.1:27017';
 
-export function insertData(data: any) {
-    const metadata = MongoDBClient.db("ao3_db").collection("metadata");
-    metadata.findOne({'worksId': data.worksId}).then((res: any)=> {
-        if (res == null) {
-            console.debug("Metadata not found! Inserting into the database")
-            metadata.insertOne(data);
-        }
-        else console.debug("Metadata already exists!")
-    })
-}
+const dbName = 'ao3_db';
 
-export function deleteData(worksUrl: string) {
-    const metadata = MongoDBClient.db("ao3_db").collection("metadata");
-    return metadata.deleteOne({"worksUrl": worksUrl});
-}
+let db: Db | null = null;
+let client: MongoClient | null = null;
 
-export function updateData(data: any) {
-    const metadata = MongoDBClient.db("ao3_db").collection("metadata");
-    const updateObj = { $set: data };
-    metadata.updateOne({"worksId": data.worksId}, updateObj, {});
-}
+export async function initMongoDB() {
+  try {
+    client = await MongoClient.connect(mongoUrl);
+    console.log('Connected successfully to MongoDB');
 
-export function fetchData(worksUrl: string) {
-    const metadata = MongoDBClient.db("ao3_db").collection("metadata");
-    if (URL_VALIDATE.test(worksUrl)) {
-        return metadata.findOne({'worksUrl': worksUrl})
+    db = client.db(dbName);
+
+    const collections = await db.listCollections().toArray();
+    const collectionNames = collections.map((collection) => collection.name);
+
+    if (!collectionNames.includes('metadata')) {
+      await db.createCollection('metadata');
+      console.log('Collection "metadata" created');
     }
+
+    if (!collectionNames.includes('users')) {
+      await db.createCollection('users');
+      console.log('Collection "users" created');
+
+      // Insert default admin user
+      await db.collection('users').insertOne({
+        user: process.env.DEFAULT_ADMIN_USER,
+        password: process.env.DEFAULT_ADMIN_PWD,
+      });
+    }
+  } catch (err) {
+    console.error('Failed to connect to MongoDB:', err);
+  }
 }
 
-export function fetchUser(user: string) {
-    const users = MongoDBClient.db("ao3_db").collection("users");
-    return users.findOne({'user': user})
+export async function insertData(data: any) {
+  if (!db) {
+    console.error('MongoDB is not connected');
+    return;
+  }
+
+  const metadataCollection = db.collection('metadata');
+  metadataCollection.findOne({ worksId: data.worksId }).then((res: any) => {
+    if (res == null) {
+      console.debug('Metadata not found! Inserting into the database');
+      metadataCollection.insertOne(data);
+    } else {
+      console.debug('Metadata already exists!');
+    }
+  });
+}
+
+export async function deleteData(worksUrl: string) {
+  if (!db) {
+    console.error('MongoDB is not connected');
+    return;
+  }
+
+  const metadataCollection = db.collection('metadata');
+  return metadataCollection.deleteOne({ worksUrl });
+}
+
+export async function updateData(data: any) {
+  if (!db) {
+    console.error('MongoDB is not connected');
+    return;
+  }
+
+  const metadataCollection = db.collection('metadata');
+  const updateObj = { $set: data };
+  metadataCollection.updateOne({ worksId: data.worksId }, updateObj);
+}
+
+export async function fetchData(worksUrl: string) {
+  if (!db) {
+    console.error('MongoDB is not connected');
+    return;
+  }
+
+  const metadataCollection = db.collection('metadata');
+  if (URL_VALIDATE(worksUrl)) {
+    return metadataCollection.findOne({ worksUrl });
+  } else {
+    return null; // Return null when the URL is not valid
+  }
+}
+
+export async function fetchUser(user: string) {
+  if (!db) {
+    console.error('MongoDB is not connected');
+    return;
+  }
+
+  const usersCollection = db.collection('users');
+  return usersCollection.findOne({ user });
+}
+
+export async function closeMongoDBConnection() {
+  if (client) {
+    await client.close();
+    console.log('MongoDB connection closed');
+  }
 }

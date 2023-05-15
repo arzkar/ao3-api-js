@@ -38,104 +38,90 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-app.post("/api/live/search", (req: Request, res: Response) => {
+app.post("/api/live/search", async (req: Request, res: Response) => {
   if (req.query["q"])  {
-    fetchMetadata(req.query["q"].toString())!.then((data: any) => {
+    try {
+      const data = await fetchMetadata(req.query["q"].toString());
       if (data) {
+        await crud.insertData(data);
         res.send(JSON.stringify(data));
+      } else {
+        res.send({ err: "Data not found!" });
       }
-      else res.send({
-        err: "Data not found!"
-      })
-    })
-    .catch((err: any) => res.send({
-      err: err
-    }));;
+    } catch (err) {
+      res.send({ err: err });
+    }
   }
 });
 
-app.post("/api/archive/search", (req: Request, res: Response) => {
+app.post("/api/archive/search", async (req: Request, res: Response) => {
   if (req.query["q"])  {
-    const response = crud.fetchData(req.query["q"].toString())
-    if (response) {
-      response.then(data => {
-        if (data) {
-          res.send(data);
-        }
-        else res.send({
-          err: "Data not found!"
-        })
-      })
-      .catch((err: any) => res.send({
-        err: err
-      }));;
+    try {
+      const response = await crud.fetchData(req.query["q"].toString());
+      if (response) {
+        res.send(response);
+      } else {
+        res.send({ err: "Data not found!" });
+      }
+    } catch (err) {
+      res.send({ err: err });
     }
   }
 });
 
 // admin operations
-app.post("/api/archive/update", auth, (req: Request, res: Response) => {
+app.post("/api/archive/update", auth, async (req: Request, res: Response) => {
   if (req.query["q"])  {
-    fetchMetadata(req.query["q"].toString())!.then((data: any) => {
+    try {
+      const data = await fetchMetadata(req.query["q"].toString());
       if (data) {
+        await crud.updateData(data);
         res.send(JSON.stringify(data));
+      } else {
+        res.send({ err: "Data not found!" });
       }
-      else res.send({
-        err: "Data not found!"
-      })
-    })
-    .catch((err: any) => res.send({
-      err: err
-    }));;
-  }
-});
-
-app.post("/api/archive/delete", auth, (req: Request, res: Response) => {
-  if (req.query["q"])  {
-    const response = crud.deleteData(req.query["q"].toString())
-    if (response) {
-      response.then(data => {
-        if (data) {
-          res.send({
-            res: "Data deleted successfully!"
-          })
-        }
-        else res.send({
-          err: "Data not deleted successfully!"
-        })
-      })
-      .catch((err) => res.send({
-        err: err
-      }));;
+    } catch (err) {
+      res.send({ err: err });
     }
   }
 });
 
-
-app.post("/api/auth", (req: Request, res: Response) => {
-  const response = crud.fetchUser(req.body.user.toString())
-  if (response) {
-    response.then(data => {
+app.post("/api/archive/delete", auth, async (req: Request, res: Response) => {
+  if (req.query["q"])  {
+    try {
+      const data = await crud.deleteData(req.query["q"].toString());
       if (data) {
-        if (req.body.password == data.password) {
-          var token = sign({ user: req.body.user}, process.env.TOKEN_KEY!, {
-            expiresIn: 1800 // expires in 30 mins
-          });
-          res.send({
-            "token": token,
-            "expiresIn": "1800"
-          })
-        }
+        res.send({ res: "Data deleted successfully!" });
+      } else {
+        res.send({ err: "Data not deleted successfully!" });
       }
-      else res.send({
-        err: "User not found!"
-      })
-    })
-    .catch((err) => res.send({
-      err: err
-    }));;
+    } catch (err) {
+      res.send({ err: err });
+    }
   }
 });
 
+app.post("/api/auth", async (req: Request, res: Response) => {
+  const data = await crud.fetchUser(req.body.user.toString());
+  if (data) {
+    try {
+      if (data) {
+        if (req.body.password == data.password) {
+          var token = sign({ user: req.body.user}, process.env.TOKEN_KEY!, {
+            expiresIn: process.env.AUTH_TOKEN_EXPIRE
+          });
+          res.send({
+            "token": token,
+            "expiresIn": process.env.AUTH_TOKEN_EXPIRE
+          });
+        }
+      } else {
+        res.send({ err: "User not found!" });
+      }
+    } catch (err) {
+      res.send({ err: err });
+    }
+  }
+});
 
 app.listen(port, () => console.log(`Listening on port ${port}..`));
