@@ -1,6 +1,6 @@
 <h1 align="center">ao3-api</h1>
 
-An API to scrape archiveofourown.org fanfiction metadata using NodeJS’s ExpressJS and CheerioJS. Currently it can search for archiveofourown.org works to get different metadata like author name, chapter count, word count, genre, ratings etc <br/><br/>
+An API to scrape archiveofourown.org fanfiction metadata using the [fetch-ao3](https://github.com/arzkar/fetch-ao3) library that I created for scraping archiveofourown.org. Currently it can search for archiveofourown.org works to get different metadata like author name, chapter count, word count, genre, ratings etc <br/>
 
 ### Features:
 
